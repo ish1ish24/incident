@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Incident Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    nav {
+      background-color: #333;
+      padding: 1rem;
+      color: #fff;
+      text-align: center;
+    }
+    .container {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    form, table {
+      background-color: white;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    form > div, .modal-body > div {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-edit {
+      background-color: #4CAF50;
+      color: white;
+      margin-right: 0.5rem;
+    }
+    .btn-delete {
+      background-color: #f44336;
+      color: white;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+    .username-display {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logout-link, .detail-link {
+      color: #007BFF;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: normal;
+      font-size: 0.95rem;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <h2>Incident Management Dashboard</h2>
+  </nav>
+
+  <div class="container">
+    <div class="username-display" id="usernameDisplay"></div>
+
+    <form id="incidentForm">
+      <div>
+        <label for="incidentType">Incident Type</label>
+        <select id="incidentType" required>
+          <option value="">Select Type</option>
+          <option value="Accident">Accident</option>
+          <option value="Fire">Fire</option>
+          <option value="Robbery">Robbery</option>
+          <option value="Flood">Flood</option>
+        </select>
+      </div>
+      <div>
+        <label for="date">Date</label>
+        <input type="date" id="date" required />
+      </div>
+      <div>
+        <label for="time">Time</label>
+        <input type="time" id="time" required />
+      </div>
+      <div>
+        <label for="address">Address</label>
+        <input type="text" id="address" required />
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Date & Time</th>
+          <th>Address</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="incidentTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <form id="editForm">
+        <input type="hidden" id="editId" />
+        <div>
+          <label for="editType">Incident Type</label>
+          <select id="editType" required>
+            <option value="Accident">Accident</option>
+            <option value="Fire">Fire</option>
+            <option value="Robbery">Robbery</option>
+            <option value="Flood">Flood</option>
+          </select>
+        </div>
+        <div>
+          <label for="editDate">Date</label>
+          <input type="date" id="editDate" required />
+        </div>
+        <div>
+          <label for="editTime">Time</label>
+          <input type="time" id="editTime" required />
+        </div>
+        <div>
+          <label for="editAddress">Address</label>
+          <input type="text" id="editAddress" required />
+        </div>
+        <button type="submit">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- User Details Modal -->
+  <div class="modal" id="userDetailModal">
+    <div class="modal-content">
+      <h3>User Details</h3>
+      <div id="userDetails"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('incidentForm');
+    const tableBody = document.getElementById('incidentTableBody');
+    const editModal = document.getElementById('editModal');
+    const editForm = document.getElementById('editForm');
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const userDetailModal = document.getElementById('userDetailModal');
+    const userDetails = document.getElementById('userDetails');
+    let currentUserData = null;
+
+    function fetchUser() {
+      fetch("http://localhost:8090/api/loggeduser")
+        .then(res => res.json())
+        .then(user => {
+          currentUserData = user;
+          const fullName = `${user.firstName} ${user.lastName}`;
+          usernameDisplay.innerHTML = `
+            <span>
+              Logged in as: ${fullName}
+              <span class="detail-link" onclick="openUserModal()">More Details</span>
+            </span>
+            <span class="logout-link" onclick="logout()">Logout</span>
+          `;
+        });
+    }
+
+    function openUserModal() {
+      if (!currentUserData) return;
+      const u = currentUserData;
+
+      userDetails.innerHTML = `
+        <p><strong>Username:</strong> ${u.username}</p>
+        <p><strong>Email:</strong> ${u.email}</p>
+        <p><strong>First Name:</strong> ${u.firstName}</p>
+        <p><strong>Last Name:</strong> ${u.lastName}</p>
+        <p><strong>Address:</strong> ${u.address}</p>
+        <p><strong>City:</strong> ${u.city}</p>
+        <p><strong>State:</strong> ${u.state ?? 'N/A'}</p>
+        <p><strong>Country:</strong> ${u.country}</p>
+        <p><strong>Pincode:</strong> ${u.pincode}</p>
+        <p><strong>Mobile No:</strong> ${u.mobileno}</p>
+        <p><strong>Fax:</strong> ${u.fax || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${u.phone ?? 'N/A'}</p>
+        <p><strong>Roles:</strong> ${u.roles.map(r => r.name).join(', ')}</p>
+        <p><strong>Enabled:</strong> ${u.enabled ? 'Yes' : 'No'}</p>
+      `;
+      userDetailModal.style.display = 'flex';
+    }
+
+    function fetchIncidents() {
+      fetch('http://localhost:8090/api/getIncident')
+        .then(res => res.json())
+        .then(data => {
+          tableBody.innerHTML = '';
+          data.body.forEach(incident => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${incident.incidentId}</td>
+              <td>${incident.incidentType}</td>
+              <td>${incident.dateAndTime.replace('T', ' ')}</td>
+              <td>${incident.address}</td>
+              <td>
+                <button class="btn-edit" onclick="openEditModal(${incident.id}, '${incident.incidentType}', '${incident.dateAndTime}', '${incident.address}')">Edit</button>
+                <button class="btn-delete" onclick="deleteIncident(${incident.id})">Delete</button>
+              </td>
+            `;
+            tableBody.appendChild(row);
+          });
+        });
+    }
+
+    function openEditModal(id, type, dateAndTime, address) {
+      document.getElementById('editId').value = id;
+      document.getElementById('editType').value = type;
+      document.getElementById('editAddress').value = address;
+      document.getElementById('editDate').value = dateAndTime.split('T')[0];
+      document.getElementById('editTime').value = dateAndTime.split('T')[1];
+      editModal.style.display = 'flex';
+    }
+
+    editForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const incidentType = document.getElementById('editType').value;
+      const address = document.getElementById('editAddress').value;
+      const date = document.getElementById('editDate').value;
+      const time = document.getElementById('editTime').value;
+      const dateAndTime = date + 'T' + time;
+
+      const updatedIncident = {
+        incidentType: incidentType,
+        dateAndTime: dateAndTime,
+        address: address
+      };
+
+      fetch(`http://localhost:8090/api/edit/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedIncident)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('Incident updated successfully!');
+          editModal.style.display = 'none';
+          fetchIncidents();
+        } else {
+          throw new Error('Failed to update incident.');
+        }
+      })
+      .catch(error => {
+        console.error('Error updating incident:', error);
+        alert('There was an error updating the incident.');
+      });
+    });
+
+    function deleteIncident(id) {
+      if (confirm('Are you sure you want to delete this incident?')) {
+        fetch(`http://localhost:8090/api/delete/${id}`, {
+          method: 'DELETE'
+        })
+        .then(() => fetchIncidents());
+      }
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const incident = {
+        incidentType: document.getElementById('incidentType').value,
+        dateAndTime: document.getElementById('date').value + 'T' + document.getElementById('time').value,
+        address: document.getElementById('address').value
+      };
+
+      fetch('http://localhost:8090/api/saveIncident', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(incident)
+      })
+      .then(response => response.json())
+      .then(() => {
+        form.reset();
+        fetchIncidents();
+      });
+    });
+
+    function logout() {
+      alert("Logging out...");
+      window.location.href = "/login";
+    }
+
+    window.onclick = function(event) {
+      if (event.target === editModal) editModal.style.display = "none";
+      if (event.target === userDetailModal) userDetailModal.style.display = "none";
+    }
+
+    fetchUser();
+    fetchIncidents();
+  </script>
+</body>
+</html>

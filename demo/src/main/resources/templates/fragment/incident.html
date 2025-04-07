@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Incident</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            background: linear-gradient(135deg, #8EC5FC 0%, #E0C3FC 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            background-color: #333;
+            color: white;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .nav-icons a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 16px;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 120px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 10px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 80px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        .form-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            animation: slideIn 0.8s ease-in-out;
+            max-width: 600px;
+            width: 100%;
+        }
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: 600;
+            margin-top: 10px;
+            display: block;
+            color: #333;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .form-container {
+                margin: 0 20px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-icons" id="auth-links">
+        <a href="/login"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="/register"><i class="fas fa-user-plus"></i> Signup</a>
+    </div>
+    <div class="nav-icons" id="profile-dropdown" style="display: none;">
+        <div class="dropdown">
+            <a href="#" id="profile-link">
+                <span id="welcome-text">Welcome</span>
+                <i class="fas fa-user"></i>
+                <span id="username-display">My Profile</span>
+            </a>
+            <div class="dropdown-content" id="profile-dropdown-content">
+                <a href="/profile">View Profile</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="main-content">
+    <div class="form-container">
+        <h2>Register or Report an Incident</h2>
+        <form id="incidentForm">
+            <label for="incidentType">Type of Incident</label>
+            <select id="incidentType" name="incidentType" required>
+                <option value="">Select Incident</option>
+                <option value="Fire">Fire</option>
+                <option value="Accident">Accident</option>
+                <option value="Flood">Flood</option>
+                <option value="Power Outage">Power Outage</option>
+                <option value="Other">Other</option>
+            </select>
+            <label for="address">Address</label>
+            <textarea id="address" name="address" rows="3" required></textarea>
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" required />
+            <label for="time">Time</label>
+            <input type="time" id="time" name="time" required />
+            <button type="submit">Submit Incident</button>
+        </form>
+    </div>
+</div>
+<script>
+    const authLinks = document.getElementById('auth-links');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const usernameDisplay = document.getElementById('username-display');
+
+    fetch('http://localhost:8090/api/loggeduser')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(user => {
+            if (user) {
+                authLinks.style.display = 'none';
+                profileDropdown.style.display = 'flex';
+                usernameDisplay.textContent = user.username || 'My Profile';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user details:', error);
+        });
+</script>
+</body>
+</html>

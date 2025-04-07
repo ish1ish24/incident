@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footer</title>
+    <style>
+        .footer-section { /* Renamed class to avoid potential conflicts */
+            background: linear-gradient(45deg, #1c1c1c, #3c3c3c, #1c1c1c);
+            color: #fff;
+            padding: 40px 0;
+            text-align: center;
+            width: 100%;
+            position: relative;
+            bottom: 0;
+            animation: footerGlowAnimation 3s infinite alternate; /* Renamed animation */
+        }
+
+        .footer-container { /* Renamed class to avoid potential conflicts */
+            max-width: 800px;
+            margin: auto;
+            transform: perspective(500px) rotateX(10deg);
+            animation: footerFloatAnimation 4s infinite ease-in-out; /* Renamed animation */
+        }
+
+        .footer-title { /* Renamed class to avoid potential conflicts */
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .footer-text { /* Renamed class to avoid potential conflicts */
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links { /* Renamed class to avoid potential conflicts */
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .footer-link { /* Renamed class to avoid potential conflicts */
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+
+        .footer-social-icons { /* Renamed class to avoid potential conflicts */
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .footer-icon { /* Renamed class to avoid potential conflicts */
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .footer-copyright { /* Renamed class to avoid potential conflicts */
+            font-size: 14px;
+        }
+
+        @keyframes footerGlowAnimation { /* Renamed animation */
+            0% {
+                box-shadow: 0 0 10px #1c1c1c;
+            }
+            100% {
+                box-shadow: 0 0 20px #3c3c3c;
+            }
+        }
+
+        @keyframes footerFloatAnimation { /* Renamed animation */
+            0% {
+                transform: perspective(500px) rotateX(10deg) translateY(0);
+            }
+            50% {
+                transform: perspective(500px) rotateX(10deg) translateY(-10px);
+            }
+            100% {
+                transform: perspective(500px) rotateX(10deg) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="footer-section">
+        <div class="footer-container">
+            <h2 class="footer-title">PropertyLelo</h2>
+            <p class="footer-text">Your one-stop solution for buying, selling, and renting properties.</p>
+            <div class="footer-links">
+                <a href="#home" class="footer-link">Home</a>
+                <a href="#services" class="footer-link">Services</a>
+                <a href="#projects" class="footer-link">Projects</a>
+                <a href="#about" class="footer-link">About Us</a>
+                <a href="#contact" class="footer-link">Contact</a>
+            </div>
+            <div class="footer-social-icons">
+                <span class="footer-icon">📘</span>
+                <span class="footer-icon">🐦</span>
+                <span class="footer-icon">📸</span>
+                <span class="footer-icon">💼</span>
+            </div>
+            <p class="footer-copyright">© 2025 PropertyLelo. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
